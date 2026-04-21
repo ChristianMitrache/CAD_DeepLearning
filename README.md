@@ -1,13 +1,11 @@
 # cad-dl
 
 Work-in-progress toward a CAD embedding model aligned with text, useful for
-CAD→CAD retrieval and eventually text→CAD search. Right now the repo is
+text→CAD search. Right now the repo is
 mostly the preprocessing side: pulling raw STEP-based datasets (currently
 just AutoMate), tessellating them, sampling point clouds, and writing
 everything out to a uniform on-disk format so the modeling work doesn't
-have to care which dataset a part came from.
-
-Model architecture notes live in [PLAN.md](PLAN.md).
+have to care which dataset a part/assembly came from.
 
 ## Getting started
 
@@ -102,3 +100,34 @@ make format    ruff format + autofix
 
 If pyright suddenly can't start with a `libsimdjson` error after a brew
 upgrade, `make doctor` reinstalls node to fix the link.
+
+## Testing the setup as a fresh user
+
+Once you've worked in the repo `make setup` is mostly a no-op, so it's
+hard to tell whether it still works for someone cloning the project for
+the first time. To simulate that without touching your real config:
+
+```bash
+# Force the micromamba-install code path to run again
+rm ~/.local/bin/micromamba
+
+# Launch a zsh that ignores your ~/.zshrc, with only brew and system tools on PATH
+env -i HOME=$HOME PATH=/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin zsh -f
+
+# Inside that shell:
+cd /path/to/CAD_DeepLearning
+make setup
+
+# Exit the bare shell, open a regular new terminal, and check:
+micromamba activate cad-dl
+cad-dl --help
+```
+
+If you also want to exercise env creation from scratch (adds ~10 min):
+
+```bash
+~/.local/bin/micromamba env remove -n cad-dl -y --root-prefix ~/mamba
+```
+
+`env -i` wipes env vars, `zsh -f` skips rc files — together that's close
+enough to a fresh account to catch most setup bugs.
