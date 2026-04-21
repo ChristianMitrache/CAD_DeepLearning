@@ -1,0 +1,85 @@
+[project]
+# Dependencies live in environment.yml, not here. pyproject.toml is only kept
+# around for:
+#   - the `cad-dl` / `automate-stats` entry points
+#   - setuptools packaging (so `pip install -e .` works from environment.yml)
+#   - ruff + pyright + pylint config
+# The install flow is `make setup` → micromamba creates the env from
+# environment.yml → that file's `pip:` block does `-e .` to install cad-dl.
+name = "cad-dl"
+version = "0.1.0"
+description = "CAD embedding model aligned with text descriptions"
+requires-python = "==3.11.*"
+
+[project.scripts]
+cad-dl = "cad_dl.pipeline.cli:main"
+# Dataset-specific helpers that haven't been folded into the unified pipeline yet.
+automate-stats = "cad_dl.datasets.automate.scripts.compute_stats:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["cad_dl*"]
+
+[tool.pyright]
+# Point pyright at the conda env so it can resolve pythonocc-core + all PyPI deps.
+# pythonocc-core ships no type stubs, so OCC.* symbols will be typed Unknown —
+# that's unavoidable. reportMissingTypeStubs=false keeps the warning noise down.
+# pyright doesn't expand ~ or env vars, so the env site-packages goes via extraPaths.
+extraPaths = [
+    "/Users/christianalexandermitrache/mamba/envs/cad-dl/lib/python3.11/site-packages",
+]
+pythonVersion = "3.11"
+include = ["src"]
+exclude = [
+    "reference",
+    "**/__pycache__",
+    "**/node_modules",
+    # AutoMate-specific analytics script; pandas stubs produce tons of
+    # Series/ndarray ambiguity warnings. Excluded rather than rewritten.
+    "src/cad_dl/datasets/automate/scripts/compute_stats.py",
+]
+reportMissingTypeStubs = false
+reportMissingModuleSource = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src"]
+exclude = ["reference", "data"]
+
+[tool.ruff.lint]
+# E = pycodestyle errors, F = pyflakes, I = import sorting, UP = pyupgrade,
+# B = bugbear (likely bugs), SIM = simplify, RUF = ruff-specific
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+ignore = [
+    "E501",   # line too long — let the formatter handle it, don't error on it
+    "B008",   # default arg function call (argparse patterns trip this)
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Scripts use long CLI-style lines; don't enforce import sort
+"**/scripts/*.py" = ["E501"]
+# Dataset ABC intentionally has an empty non-abstract hook (add_download_args).
+"src/cad_dl/pipeline/dataset.py" = ["B027"]
+
+[tool.pylint.main]
+# numpy/pandas/trimesh/OCC are C-extension heavy; pylint's static analyzer can't
+# see their dynamic attrs (e.g. ndarray.astype). Generate members so no-member
+# stops spuriously firing. Real attribute bugs are caught by pyright.
+extension-pkg-allow-list = ["numpy", "pandas", "trimesh", "OCC", "vtk", "vtkmodules"]
+generated-members = ["numpy.*", "np.*", "torch.*", "cv2.*"]
+
+[tool.pylint."messages control"]
+disable = [
+    "no-member",              # pyright handles this more accurately
+    "import-error",           # handled by pyright via extraPaths
+    "missing-module-docstring",
+    "missing-function-docstring",
+    "missing-class-docstring",
+    "too-few-public-methods",
+    "line-too-long",          # ruff owns line length
+]
