@@ -136,10 +136,7 @@ celerybeat.pid
 
 # Environments
 .env
-# .envrc IS tracked — it's the shared direnv config for the project.
-# Gitignore only user-specific overrides:
-.envrc.local
-.direnv/
+.envrc
 .venv
 env/
 venv/

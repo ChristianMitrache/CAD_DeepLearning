@@ -12,18 +12,21 @@ Model architecture notes live in [PLAN.md](PLAN.md).
 ## Getting started
 
 You need Homebrew. Everything else the setup script installs for you
-(micromamba, direnv, p7zip, a conda env at `~/mamba/envs/cad-dl/`).
+(micromamba, p7zip, a conda env at `~/mamba/envs/cad-dl/`).
 
 ```bash
 make setup
-direnv allow    # run once in a fresh shell after setup
+# open a new shell so the micromamba init block takes effect, then:
+micromamba activate cad-dl
 ```
 
-After that, `cd`ing into the repo auto-activates the env. No global PATH
-changes, nothing that would step on a uv or pyenv workflow in your other
-projects. If you'd rather not use direnv, point your tools at
-`~/mamba/envs/cad-dl/bin/python` directly. More detail in
-[SETUP.md](SETUP.md).
+`make setup` writes a small init block to your shell rc (`~/.zshrc` or
+`~/.bashrc`) so `micromamba activate` Just Works afterward. From then on,
+every new shell can `micromamba activate cad-dl` to use the env.
+
+If you don't want to activate at all, point your tools at
+`~/mamba/envs/cad-dl/bin/python` directly — the env lives at a stable path.
+More detail in [SETUP.md](SETUP.md).
 
 ## Running the pipeline
 

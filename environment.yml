@@ -1,0 +1,43 @@
+name: cad-dl
+channels:
+  - conda-forge
+  - pytorch
+dependencies:
+  # Core + the conda-only one that started all this
+  - python=3.11
+  - pythonocc-core=7.7.*
+
+  # Scientific stack
+  - numpy<2.1
+  - scipy
+  - pandas
+  - pyarrow
+  - networkx
+  - tqdm
+  - scikit-learn
+  - matplotlib
+  - pyyaml
+  - jinja2
+
+  # 3D / viz
+  - trimesh
+  - pyvista
+  - vtk
+
+  # Deep learning — versions pinned to match prior install.
+  # Note: conda-forge's canonical name is `pytorch_geometric` (underscore).
+  - pytorch=2.7.1
+  - torchvision=0.22.1
+  - pytorch-lightning
+  - pytorch_geometric>=2.6.0
+
+  # Dev tooling
+  - pyright>=1.1.408
+  - ruff>=0.6.0
+
+  # Git-only / PyPI-only — installed via pip after the conda env exists
+  - pip
+  - pip:
+      - pydeprecate==0.3.*
+      - occwl @ git+https://github.com/AutodeskAILab/occwl.git
+      - -e .
